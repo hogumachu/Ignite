@@ -5,7 +5,8 @@
 // See LICENSE for license information.
 //
 
-@MainActor
+import Foundation
+
 struct FeedGenerator {
     var site: any Site
     var content: [Content]
@@ -36,7 +37,7 @@ struct FeedGenerator {
     }
 
     private func generateContentXML() -> String {
-        content
+        return content
             .prefix(site.feedConfiguration.contentCount)
             .map { item in
                 var itemXML = """
@@ -72,7 +73,7 @@ struct FeedGenerator {
     }
 
     private func generateRSSHeader() -> String {
-        """
+        return """
     <?xml version="1.0" encoding="UTF-8" ?>\
     <rss version="2.0" \
     xmlns:dc="http://purl.org/dc/elements/1.1/" \

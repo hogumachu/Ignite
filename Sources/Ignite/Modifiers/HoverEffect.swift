@@ -5,26 +5,18 @@
 // See LICENSE for license information.
 //
 
-/// A modifier that applies hover effects to HTML elements
-struct HoverEffectModifier: HTMLModifier {
-    /// The effect to apply when hovering
-    private let effect: (EmptyHoverEffect) -> any HTML
+import Foundation
 
-    /// Creates a new hover effect modifier
-    /// - Parameter effect: A closure that returns the effect to be applied
-    init(_ effect: @escaping (EmptyHoverEffect) -> any HTML) {
-        self.effect = effect
-    }
-
-    /// Applies hover effect to the provided HTML content
-    /// - Parameter content: The HTML element to modify
-    /// - Returns: The modified HTML with hover effect applied
-    func body(content: some HTML) -> any HTML {
-        content.onHover { isHovering in
+public extension PageElement {
+    /// Applies a hover effect to the page element
+    /// - Parameter effect: A closure that returns the effect to be applied.
+    ///   The argument acts as a placeholder representing this page element.
+    /// - Returns: The page element with the provided hover effect applied.
+    @discardableResult
+    func hoverEffect(_ effect: @escaping (EmptyHoverEffect) -> some PageElement) -> Self {
+        onHover { isHovering in
             if isHovering {
-                let effectElement = effect(EmptyHoverEffect())
-                let effectAttributes = AttributeStore.default.attributes(for: effectElement.id)
-                ApplyHoverEffects(styles: effectAttributes.styles)
+                ApplyHoverEffects(styles: effect(EmptyHoverEffect()).attributes.styles)
             } else {
                 RemoveHoverEffects()
             }
@@ -32,26 +24,17 @@ struct HoverEffectModifier: HTMLModifier {
     }
 }
 
-public extension HTML {
-    /// Applies a hover effect to the page element
-    /// - Parameter effect: A closure that returns the effect to be applied.
-    ///   The argument acts as a placeholder representing this page element.
-    /// - Returns: A modified copy of the element with hover effect applied
-    func hoverEffect(_ effect: @escaping (EmptyHoverEffect) -> some HTML) -> some HTML {
-        modifier(HoverEffectModifier(effect))
-    }
-}
-
 /// An empty hover effect type to which styles can be added
-public struct EmptyHoverEffect: HTML {
-    /// The content and behavior of this HTML.
-    public var body: some HTML { self }
+public struct EmptyHoverEffect: PageElement {
+    public func render(context: PublishingContext) -> String {
+        ""
+    }
 
-    public func render(context: PublishingContext) -> String { "" }
+    public var attributes = CoreAttributes()
 }
 
 private struct ApplyHoverEffects: Action {
-    let styles: OrderedSet<AttributeValue>
+    let styles: [AttributeValue]
 
     func compile() -> String {
         """

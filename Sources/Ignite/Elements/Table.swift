@@ -5,8 +5,10 @@
 // See LICENSE for license information.
 //
 
+import Foundation
+
 /// Used to create tabulated data on a page.
-public struct Table: BlockHTML {
+public struct Table: BlockElement {
     /// Styling options for tables.
     public enum Style {
         /// All table rows and columns look the same. The default.
@@ -21,14 +23,8 @@ public struct Table: BlockHTML {
         case stripedColumns
     }
 
-    /// The content and behavior of this HTML.
-    public var body: some HTML { self }
-
-    /// The unique identifier of this HTML.
-    public var id = UUID().uuidString.truncatedHash
-
-    /// Whether this HTML belongs to the framework.
-    public var isPrimitive: Bool { true }
+    /// The standard set of control attributes for HTML elements.
+    public var attributes = CoreAttributes()
 
     /// How many columns this should occupy when placed in a section.
     public var columnWidth = ColumnWidth.automatic
@@ -37,7 +33,7 @@ public struct Table: BlockHTML {
     var rows: [Row]
 
     /// An optional array of header to use at the top of this table.
-    var header: [any HTML]?
+    var header: [PageElement]?
 
     /// The styling to apply to this table. Defaults to `.plain`.
     var style = Style.plain
@@ -65,10 +61,10 @@ public struct Table: BlockHTML {
     ///   - header: An array of headers to use at the top of the table.
     public init(
         @ElementBuilder<Row> rows: () -> [Row],
-        @HTMLBuilder header: () -> some HTML
+        @PageElementBuilder header: () -> [PageElement]
     ) {
         self.rows = rows()
-        self.header = flatUnwrap(header())
+        self.header = header()
     }
 
     /// Adjusts the style of this table.
@@ -117,7 +113,7 @@ public struct Table: BlockHTML {
             tableAttributes.append(classes: ["table-striped-columns"])
         }
 
-        var output = "<table\(tableAttributes.description())>"
+        var output = "<table\(tableAttributes.description)>"
 
         if let caption {
             output += "<caption>\(caption)</caption>"

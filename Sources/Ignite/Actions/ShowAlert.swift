@@ -5,6 +5,8 @@
 // See LICENSE for license information.
 //
 
+import Foundation
+
 /// Shows a browser alert dialog with an OK button.
 public struct ShowAlert: Action {
     /// The text to show inside the alert

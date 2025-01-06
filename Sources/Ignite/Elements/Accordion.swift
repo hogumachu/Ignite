@@ -5,9 +5,11 @@
 // See LICENSE for license information.
 //
 
+import Foundation
+
 /// A control that displays a list of section titles that can be folded out to
 /// display more content.
-public struct Accordion: BlockHTML {
+public struct Accordion: BlockElement {
     /// Controls what happens when a section is opened.
     public enum OpenMode {
         /// Opening one accordion section automatically closes all others.
@@ -17,14 +19,8 @@ public struct Accordion: BlockHTML {
         case all
     }
 
-    /// The content and behavior of this HTML.
-    public var body: some HTML { self }
-
-    /// The unique identifier of this HTML.
-    public var id = UUID().uuidString.truncatedHash
-
-    /// Whether this HTML belongs to the framework.
-    public var isPrimitive: Bool { true }
+    /// The standard set of control attributes for HTML elements.
+    public var attributes = CoreAttributes()
 
     /// How many columns this should occupy when placed in a section.
     public var columnWidth = ColumnWidth.automatic
@@ -56,18 +52,21 @@ public struct Accordion: BlockHTML {
     /// Renders this element using publishing context passed in.
     /// - Parameter context: The current publishing context.
     /// - Returns: The HTML for this element.
-    public func render(context: PublishingContext) -> String {
-        // Accordions with an individual open mode must have
+    public func render(context: PublishingContext) -> String {  // Accordions with an individual open mode must have
         // each element linked back to a unique accordion ID.
         // This is generated below, then passed into individual
         // items so they can adapt accordinly.
-        let accordionID = "accordion\(UUID().uuidString.truncatedHash)"
-        let assignedItems = items.map { $0.assigned(to: accordionID, openMode: openMode) }
-        let output = Container { assignedItems }
-            .attributes(attributes)
-            .class("accordion")
-            .id(accordionID)
-            .render(context: context)
+        let accordionID = "accordion\(UUID().uuidString)"
+
+        let output = Group {
+            for item in items {
+                item.assigned(to: accordionID, openMode: openMode)
+            }
+        }
+        .attributes(attributes)
+        .class("accordion")
+        .id(accordionID)
+        .render(context: context)
 
         return output
     }

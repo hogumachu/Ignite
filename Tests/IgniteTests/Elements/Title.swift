@@ -5,12 +5,13 @@
 // See LICENSE for license information.
 //
 
-import XCTest
+import Foundation
 
+import XCTest
 @testable import Ignite
 
 /// Tests for the `title` element.
-@MainActor final class TitleTests: ElementTest {
+final class TitleTests: ElementTest {
     func test_empty() {
         let element = Title("")
         let output = element.render(context: publishingContext)

@@ -5,6 +5,8 @@
 // See LICENSE for license information.
 //
 
+import Foundation
+
 /// Shows a modal dialog with the content of the page element identified by ID
 public struct ShowModal: Action, Sendable {
 
@@ -57,7 +59,7 @@ public struct ShowModal: Action, Sendable {
     public func compile() -> String {
         """
         const options = {
-            \(options.map(\.htmlOption).joined(separator: ",\n\t"))
+            \(options.map { $0.htmlOption }.joined(separator: ",\n\t"))
         };
         const modal = new bootstrap.Modal(document.getElementById('\(id)'), options);
         modal.show();

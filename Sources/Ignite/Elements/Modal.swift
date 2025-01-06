@@ -5,8 +5,11 @@
 // See LICENSE for license information.
 //
 
+import Foundation
+
 /// A modal dialog presented on top of the screen
-public struct Modal: HTML {
+public struct Modal: PageElement {
+
     /// The size of the modal. Except from the full screen modal the height is defined by the height wheras the width
     public enum Size {
         /// A modal dialog with a small max-width of 300px
@@ -56,19 +59,13 @@ public struct Modal: HTML {
         }
     }
 
-    /// The content and behavior of this HTML.
-    public var body: some HTML { self }
+    /// The standard set of control attributes for HTML elements.
+    public var attributes = CoreAttributes()
 
-    /// The unique identifier of this HTML.
-    public var id = UUID().uuidString.truncatedHash
-
-    /// Whether this HTML belongs to the framework.
-    public var isPrimitive: Bool { true }
-
-    let htmlID: String
-    private var items: HTMLCollection
-    private var header: HTMLCollection
-    private var footer: HTMLCollection
+    let id: String
+    var items: [any PageElement] = []
+    var header: [any PageElement] = []
+    var footer: [any PageElement] = []
 
     var animated = true
     var scrollable = false
@@ -77,14 +74,14 @@ public struct Modal: HTML {
 
     public init(
         id modalId: String,
-        @HTMLBuilder body: () -> some HTML,
-        @HTMLBuilder header: () -> some HTML = { EmptyHTML() },
-        @HTMLBuilder footer: () -> some HTML = { EmptyHTML() }
+        @PageElementBuilder body: () -> [PageElement],
+        @PageElementBuilder header: () -> [PageElement] = { [] },
+        @PageElementBuilder footer: () -> [PageElement] = { [] }
     ) {
-        self.htmlID = modalId
-        self.items = HTMLCollection(body)
-        self.header = HTMLCollection(header)
-        self.footer = HTMLCollection(footer)
+        self.id = modalId
+        self.items = body()
+        self.header = header()
+        self.footer = footer()
     }
 
     /// Adjusts the size of the modal.
@@ -127,24 +124,31 @@ public struct Modal: HTML {
     /// - Parameter context: The current publishing context.
     /// - Returns: The HTML for this element.
     public func render(context: PublishingContext) -> String {
-        Container {
-            Container {
-                Container {
-                    if !header.isEmptyHTML {
-                        Container {
-                            header
+        Group {
+            Group {
+                Group {
+
+                    if header.isEmpty == false {
+                        Group {
+                            for item in header {
+                                item
+                            }
                         }
                         .class("modal-header")
                     }
 
-                    Container {
-                        items
+                    Group {
+                        for item in items {
+                            item
+                        }
                     }
                     .class("modal-body")
 
-                    if !footer.isEmptyHTML {
-                        Container {
-                            footer
+                    if footer.isEmpty == false {
+                        Group {
+                            for item in footer {
+                                item
+                            }
                         }
                         .class("modal-footer")
                     }
@@ -158,7 +162,7 @@ public struct Modal: HTML {
         }
         .class(animated ? "modal fade" : "modal")
         .tabFocus(.focusable)
-        .id(htmlID)
+        .id(id)
         .aria("labelledby", "modalLabel")
         .aria("hidden", "true")
         .render(context: context)

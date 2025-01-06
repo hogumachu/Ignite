@@ -5,25 +5,21 @@
 // See LICENSE for license information.
 //
 
+import Foundation
+
 /// A protocol for customizing the layout of ContentPreview.
 public protocol ContentPreviewStyle {
-    func body(content: Content, context: PublishingContext) -> any BlockHTML
+    func body(content: Content, context: PublishingContext) -> BlockElement
 }
 
 /// A wrapper around Card, specifically aimed at presenting details about
 /// some content on your site. This automatically links to your content page
 /// and adds in tags.
-public struct ContentPreview: BlockHTML {
-    /// The content and behavior of this HTML.
-    public var body: some HTML { self }
-
-    /// The unique identifier of this HTML.
-    public var id = UUID().uuidString.truncatedHash
-
-    /// Whether this HTML belongs to the framework.
-    public var isPrimitive: Bool { true }
-
+public struct ContentPreview: BlockElement {
     var content: Content
+
+    /// The standard set of control attributes for HTML elements.
+    public var attributes = CoreAttributes()
 
     /// How many columns this should occupy when placed in a section.
     public var columnWidth = ColumnWidth.automatic
@@ -64,7 +60,7 @@ public struct ContentPreview: BlockHTML {
     /// Default card layout for rendering the content preview.
     /// - Parameter context: The publishing context for rendering tag links.
     /// - Returns: A BlockElement representing the card layout.
-    private func defaultCardLayout(context: PublishingContext) -> some BlockHTML {
+    private func defaultCardLayout(context: PublishingContext) -> BlockElement {
         Card(imageName: content.image) {
             Text(content.description)
                 .margin(.bottom, .none)
@@ -74,14 +70,14 @@ public struct ContentPreview: BlockHTML {
             }
             .font(.title2)
         } footer: {
-            let tagLinks = content.tagLinks()
+            let tagLinks = content.tagLinks(in: context)
 
             if tagLinks.isEmpty == false {
-                Container {
+                Group {
                     tagLinks
                 }
                 .style("margin-top: -5px")
             }
         }
-    }
+    }   
 }

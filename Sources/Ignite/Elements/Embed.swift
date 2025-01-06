@@ -5,32 +5,20 @@
 // See LICENSE for license information.
 //
 
+import Foundation
+
 /// Embeds a custom URL, such as YouTube or Vimeo.
-public struct Embed: BlockHTML, LazyLoadable {
+public struct Embed: BlockElement, LazyLoadable {
     /// Determines what kind of Spotify embed we have.
     public enum SpotifyContentType: String {
         /// Creates interactive item for a single Spotify track
         case track
         /// Creates interactive  item for a Spotify playlist
         case playlist
-        /// Create interactive item for a Spotify artist
-        case artist
-        /// Creates interactive item for a Spotify album
-        case album
-        /// Creates interactive item for a Spotify podcast
-        case show
-        /// Creates interactive item for a Spotify episode
-        case episode
     }
 
-    /// The content and behavior of this HTML.
-    public var body: some HTML { self }
-
-    /// The unique identifier of this HTML.
-    public var id = UUID().uuidString.truncatedHash
-
-    /// Whether this HTML belongs to the framework.
-    public var isPrimitive: Bool { true }
+    /// The standard set of control attributes for HTML elements.
+    public var attributes = CoreAttributes()
 
     /// How many columns this should occupy when placed in a section.
     public var columnWidth = ColumnWidth.automatic
@@ -120,7 +108,7 @@ public struct Embed: BlockHTML, LazyLoadable {
             """)
         }
 
-        return Container {
+        return Group {
              #"<iframe src="\#(url)" title="\#(title)" allow="\#(allowPermissions)"></iframe>"#
         }
         .attributes(attributes)

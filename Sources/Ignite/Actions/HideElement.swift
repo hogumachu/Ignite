@@ -5,6 +5,8 @@
 // See LICENSE for license information.
 //
 
+import Foundation
+
 /// Hides a page element by appending the "d-none" CSS class.
 public struct HideElement: Action {
     /// The unique identifier of the element we're trying to hide.

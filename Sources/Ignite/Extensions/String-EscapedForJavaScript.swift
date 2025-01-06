@@ -7,9 +7,9 @@
 
 import Foundation
 
-public extension String {
+extension String {
     /// Allows user strings to be used inside generated JavaScript event code.
-    func escapedForJavascript() -> String {
+    public func escapedForJavascript() -> String {
         self
             .replacing("'", with: "\\'")
             .replacing("\"", with: "&quot;")

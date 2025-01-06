@@ -5,7 +5,8 @@
 // See LICENSE for license information.
 //
 
-@MainActor
+import Foundation
+
 struct SiteMapGenerator {
     var context: PublishingContext
 

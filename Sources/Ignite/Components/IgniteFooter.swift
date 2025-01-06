@@ -5,15 +5,17 @@
 // See LICENSE for license information.
 //
 
-/// Displays "Created in Swift with Ignite", with a link back to the Ignite project on GitHub.
-/// Including this is definitely not required for your site, but it's most appreciated 🙌
-public struct IgniteFooter: HTML {
-    public init() {}
+import Foundation
 
-    public var body: some HTML {
+/// Displays "Created by Ignite", with a link back to the Ignite project on GitHub.
+/// Including this is definitely not required for your site, but it's most appreciated 🙌
+public struct IgniteFooter: Component {
+    public init() { }
+
+    public func body(context: PublishingContext) -> [any PageElement] {
         Text {
-            "Created in Swift with "
-            Link("Ignite", target: URL(static: "https://github.com/twostraws/Ignite"))
+            "Created with "
+            Link("Ignite", target: URL("https://github.com/twostraws/Ignite"))
         }
         .horizontalAlignment(.center)
         .margin(.top, .extraLarge)

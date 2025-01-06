@@ -5,29 +5,28 @@
 // See LICENSE for license information.
 //
 
-/// A block quote of text.
-public struct Quote: BlockHTML {
-    /// The content and behavior of this HTML.
-    public var body: some HTML { self }
+import Foundation
 
-    /// The unique identifier of this HTML.
-    public var id = UUID().uuidString.truncatedHash
+/// A block quote of text.
+public struct Quote: BlockElement {
+    /// The standard set of control attributes for HTML elements.
+    public var attributes = CoreAttributes()
 
     /// How many columns this should occupy when placed in a section.
     public var columnWidth = ColumnWidth.automatic
 
     /// The content of this quote.
-    var contents: any HTML
+    var contents: [PageElement]
 
     /// Provide details about this quote, e.g. a source name.
-    var caption: any InlineHTML
+    var caption: [InlineElement]
 
     /// Create a new quote from a page element builder that returns an array
     /// of elements to display in the quote.
     /// - Parameter contents: The elements to display inside the quote.
-    public init(@HTMLBuilder contents: () -> some HTML) {
+    public init(@PageElementBuilder contents: () -> [PageElement]) {
         self.contents = contents()
-        self.caption = EmptyHTML()
+        self.caption = []
     }
 
     /// Create a new quote from a page element builder that returns an array
@@ -38,8 +37,8 @@ public struct Quote: BlockHTML {
     /// - contents: The elements to display inside the quote.
     /// - contents: Additional details about the quote, e.g. its source.
     public init(
-        @HTMLBuilder contents: () -> some HTML,
-        @InlineHTMLBuilder caption: () -> some InlineHTML
+        @PageElementBuilder contents: () -> [PageElement],
+        @InlineElementBuilder caption: () -> [InlineElement]
     ) {
         self.contents = contents()
         self.caption = caption()
@@ -51,19 +50,20 @@ public struct Quote: BlockHTML {
     public func render(context: PublishingContext) -> String {
         let renderedContents = contents.render(context: context)
         let renderedCaption = caption.render(context: context)
-        var attributes = attributes
 
-        attributes.tag = "blockquote"
-        attributes.append(classes: "blockquote")
+        let blockQuoteAttributes = attributes.appending(classes: ["blockquote"])
 
         if renderedCaption.isEmpty {
-            return attributes.description(wrapping: renderedContents)
+            return """
+            <blockquote\(blockQuoteAttributes.description)>\(renderedContents)</blockquote>
+            """
         } else {
-            var footerAttributes = CoreAttributes()
-            footerAttributes.tag = "footer"
-            footerAttributes.append(classes: "blockquote-footer")
-            let footer = footerAttributes.description(wrapping: renderedCaption)
-            return attributes.description(wrapping: renderedContents + footer)
+            return """
+            <blockquote class="blockquote">\
+            \(renderedContents)\
+            <footer class="blockquote-footer">\(renderedCaption)</footer>\
+            </blockquote>
+            """
         }
     }
 }

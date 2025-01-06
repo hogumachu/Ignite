@@ -5,28 +5,24 @@
 // See LICENSE for license information.
 //
 
+import Foundation
+
 /// A small, capsule-shaped piece of information, such as a tag.
-public struct Badge: InlineHTML {
-    /// The content and behavior of this HTML.
-    public var body: some HTML { self }
-
-    /// The unique identifier of this HTML.
-    public var id = UUID().uuidString.truncatedHash
-
-    /// Whether this HTML belongs to the framework.
-    public var isPrimitive: Bool { true }
-
-    /// The different options for styling this badge.
-    public enum Style: CaseIterable {
-        case `default`, subtle, subtleBordered
+public struct Badge: InlineElement {
+    public enum BadgeStyle: CaseIterable {
+        case `default`, `subtle`, `subtleBordered`
     }
 
-    private var text: any InlineHTML
-    private var style = Style.default
+    /// The standard set of control attributes for HTML elements.
+    public var attributes = CoreAttributes()
+
+    private var text: any InlineElement
+    private var style = BadgeStyle.default
     private var role = Role.default
 
     var badgeClasses: [String] {
         var outputClasses = ["badge"]
+
         outputClasses.append(contentsOf: attributes.classes.sorted())
 
         switch style {
@@ -70,11 +66,7 @@ public struct Badge: InlineHTML {
         return outputClasses
     }
 
-    public init(_ text: any InlineHTML) {
-        self.text = text
-    }
-
-    public init(_ text: String) {
+    public init(_ text: any InlineElement) {
         self.text = text
     }
 
@@ -84,7 +76,7 @@ public struct Badge: InlineHTML {
         return copy
     }
 
-    public func badgeStyle(_ style: Style) -> Badge {
+    public func badgeStyle(_ style: BadgeStyle) -> Badge {
         var copy = self
         copy.style = style
         return copy
@@ -95,8 +87,11 @@ public struct Badge: InlineHTML {
     /// - Returns: The HTML for this element.
     public func render(context: PublishingContext) -> String {
         let badgeAttributes = attributes.appending(classes: badgeClasses)
-        return Span(text)
-            .attributes(badgeAttributes)
-            .render(context: context)
+
+        return Span {
+            text
+        }
+        .attributes(badgeAttributes)
+        .render(context: context)
     }
 }
