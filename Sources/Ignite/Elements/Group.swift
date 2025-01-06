@@ -5,49 +5,38 @@
 // See LICENSE for license information.
 //
 
-/// A transparent grouping construct that propagates modifiers to its children.
-///
-/// Use `Group` when you want to apply shared modifiers to multiple elements
-/// without introducing additional HTML structure. Unlike ``Container``, `Group`
-/// doesn't wrap its children in a `div`; instead, it passes modifiers through
-/// to each child element.
-///
-/// - Note: `Group` is particularly useful for applying shared styling or
-///         attributes to multiple elements without affecting the document
-///         structure. If you need a containing `div` element, use
-///         ``Container`` instead.
-public struct Group: BlockHTML {
-    /// The content and behavior of this HTML.
-    public var body: some HTML { self }
+import Foundation
 
-    /// The unique identifier of this HTML.
-    public var id = UUID().uuidString.truncatedHash
-
-    /// Whether this HTML belongs to the framework.
-    public var isPrimitive: Bool { true }
+/// Creates some arbitrary group of content in your page. This is used extensively
+/// on the modern web pages to divide pages up into smaller, styled sections.
+public struct Group: BlockElement {
+    /// The standard set of control attributes for HTML elements.
+    public var attributes = CoreAttributes()
 
     /// How many columns this should occupy when placed in a section.
     public var columnWidth = ColumnWidth.automatic
 
-    var items: [any HTML] = []
+    var items: [BaseElement]
+    var isTransparent: Bool
 
-    public init(@HTMLBuilder _ content: () -> some HTML) {
-        self.items = flatUnwrap(content())
+    public init(isTransparent: Bool = false, @ElementBuilder<BaseElement> _ items: () -> [BaseElement]) {
+        self.items = items()
+        self.isTransparent = isTransparent
     }
 
-    public init(_ items: any HTML) {
-        self.items = flatUnwrap(items)
+    init(items: [BaseElement], context: PublishingContext) {
+        self.items = items
+        self.isTransparent = true
     }
 
-    init(context: PublishingContext, items: [any HTML]) {
-        self.items = flatUnwrap(items)
-    }
-
+    /// Renders this element using publishing context passed in.
+    /// - Parameter context: The current publishing context.
+    /// - Returns: The HTML for this element.
     public func render(context: PublishingContext) -> String {
-        return items.map {
-            let item: any HTML = $0
-            AttributeStore.default.merge(attributes, intoHTML: item.id)
-            return item.render(context: context)
-        }.joined()
+        if isTransparent {
+            items.render(context: context)
+        } else {
+            "<div\(attributes.description)>\(items.render(context: context))</div>"
+        }
     }
 }

@@ -7,14 +7,13 @@
 
 import Foundation
 
-@MainActor
 struct SyntaxHighlightGenerator {
     var site: any Site
 
-    func generateSyntaxHighlighters(context: PublishingContext) throws -> String {
+    func generateSyntaxHighlighters() throws -> String {
         var result = ""
 
-        var highlighters = context.highlighterLanguages
+        var highlighters = site.syntaxHighlighters
         var highlightersCount = 0
 
         // A lazy way to recursively scan through dependencies
@@ -23,7 +22,7 @@ struct SyntaxHighlightGenerator {
             let dependencies = highlighters.compactMap(\.dependency)
 
             for dependency in dependencies where highlighters.contains(dependency) == false {
-                highlighters.insert(dependency)
+                highlighters.append(dependency)
             }
         } while highlightersCount != highlighters.count
 

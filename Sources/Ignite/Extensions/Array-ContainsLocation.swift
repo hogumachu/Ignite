@@ -5,6 +5,8 @@
 // See LICENSE for license information.
 //
 
+import Foundation
+
 extension Array where Element == Location {
     /// An extension that lets us determine whether one path is contained inside
     /// An array of `Location` objects.

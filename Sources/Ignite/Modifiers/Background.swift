@@ -5,94 +5,74 @@
 // See LICENSE for license information.
 //
 
-/// A modifier that applies background styling to HTML elements.
-struct BackgroundModifier: HTMLModifier {
-    /// The type of background to apply
-    enum BackgroundType {
-        case color(Color)
-        case colorString(String)
-        case material(Material)
-        case gradient(Gradient)
-    }
+import Foundation
 
-    /// The background configuration to apply
-    let background: BackgroundType
+/// Custom background styles that involve creating gradients.
+public enum BackgroundStyle {
+    /// A linear gradient between two fixed locations.
+    case linearGradient(colors: [Color], startPoint: UnitPoint, endPoint: UnitPoint)
 
-    /// Applies the background style to the provided HTML content.
-    /// - Parameter content: The HTML content to modify
-    /// - Returns: The modified HTML content with background styling applied
-    func body(content: some HTML) -> any HTML {
-        switch background {
-        case .gradient(let gradient):
-            content.style("background-image: \(gradient)")
-        case .color(let color):
-            content.style("background-color: \(color.description)")
-        case .colorString(let colorString):
-            content.style("background-color: \(colorString)")
-        case .material(let material):
-            content.class(material.className)
+    /// A radial gradient, emanating outwards.
+    case radialGradient(colors: [Color])
+
+    /// The CSS style string for this background effect.
+    var style: String {
+        switch self {
+        case let .linearGradient(colors, startPoint, endPoint):
+            let angle = Int(startPoint.degrees(to: endPoint))
+            let colorsString = colors.map(\.description).joined(separator: ", ")
+            return "linear-gradient(\(angle)deg, \(colorsString))"
+        case let .radialGradient(colors):
+            let colorsString = colors.map(\.description).joined(separator: ", ")
+            return "radial-gradient(\(colorsString))"
         }
     }
 }
 
-public extension HTML {
+public extension PageElement {
+    /// Applies a background color from a string.
+    /// - Parameter color: The specific color value to use, specified as a
+    /// hex string such as "#FFE700".
+    /// - Returns: The current element with the updated background color.
+    @available(*, deprecated, renamed: "background(_:)")
+    func backgroundColor(_ color: String) -> Self {
+        self.style("background-color: \(color)")
+    }
+
     /// Applies a background color from a `Color` object.
     /// - Parameter color: The specific color value to use, specified as
     /// a `Color` instance.
     /// - Returns: The current element with the updated background color.
-    func background(_ color: Color) -> some HTML {
-        modifier(BackgroundModifier(background: .color(color)))
+    @available(*, deprecated, renamed: "background(_:)")
+    func backgroundColor(_ color: Color) -> Self {
+        self.style("background-color: \(color.description)")
     }
 
     /// Applies a background color from a string.
-    /// - Parameter color: The specific color value to use, specified as a string.
+    /// - Parameter color: The specific color value to use, specified as a
+    /// hex string such as "#FFE700".
     /// - Returns: The current element with the updated background color.
-    func background(_ color: String) -> some HTML {
-        modifier(BackgroundModifier(background: .colorString(color)))
+    func background(_ color: String) -> Self {
+        self.style("background-color: \(color)")
     }
 
-    /// Applies a material effect background
-    /// - Parameter material: The type of material to apply
-    /// - Returns: The modified HTML element
-    func background(_ material: Material) -> some HTML {
-        modifier(BackgroundModifier(background: .material(material)))
-    }
-
-    /// Applies a gradient background
-    /// - Parameter gradient: The gradient to apply
-    /// - Returns: The modified HTML element
-    func background(_ gradient: Gradient) -> some HTML {
-        modifier(BackgroundModifier(background: .gradient(gradient)))
-    }
-}
-
-public extension BlockHTML {
     /// Applies a background color from a `Color` object.
     /// - Parameter color: The specific color value to use, specified as
     /// a `Color` instance.
     /// - Returns: The current element with the updated background color.
-    func background(_ color: Color) -> some BlockHTML {
-        modifier(BackgroundModifier(background: .color(color)))
+    func background(_ color: Color) -> Self {
+        self.style("background-color: \(color.description)")
     }
 
-    /// Applies a background color from a string.
-    /// - Parameter color: The specific color value to use, specified as a string.
-    /// - Returns: The current element with the updated background color.
-    func background(_ color: String) -> some BlockHTML {
-        modifier(BackgroundModifier(background: .colorString(color)))
-    }
+    /// Applies a background color from one or more `BackgroundStyle` cases.
+    /// - Parameter style: The specific styles to use, specified as
+    /// one or more `BackgroundStyle` instance. Specifying multiple
+    /// gradients causes them to overlap, so you should blend them with opacity.
+    /// - Returns: The current element with the updated background styles.
+    func background(_ styles: BackgroundStyle...) -> Self {
+        guard styles.isEmpty == false else { return self }
 
-    /// Applies a material effect background.
-    /// - Parameter material: The type of material to apply.
-    /// - Returns: The current element with the updated background material.
-    func background(_ material: Material) -> some BlockHTML {
-        modifier(BackgroundModifier(background: .material(material)))
-    }
-
-    /// Applies a gradient background
-    /// - Parameter gradient: The gradient to apply
-    /// - Returns: The modified HTML element
-    func background(_ gradient: Gradient) -> some BlockHTML {
-        modifier(BackgroundModifier(background: .gradient(gradient)))
+        let grouped = styles.map(\.style).joined(separator: ", ")
+        return self.style("background: \(grouped)")
     }
 }

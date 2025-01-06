@@ -6,11 +6,10 @@
 //
 
 import XCTest
-
 @testable import Ignite
 
 /// Tests for the `Script` element.
-@MainActor final class ScriptTests: ElementTest {
+final class ScriptTests: ElementTest {
     func test_code() {
         let element = Script(code: "javascript code")
         let output = element.render(context: publishingContext)
@@ -28,12 +27,9 @@ import XCTest
     func test_attributes() {
         let element = Script(file: "/code.js")
             .data("key", "value")
-            .customAttribute(name: "custom", value: "part")
+            .addCustomAttribute(name: "custom", value: "part")
         let output = element.render(context: publishingContext)
-        let normalizedOutput = normalizeHTML(output)
 
-        XCTAssertEqual(
-            normalizedOutput,
-            "<script custom=\"part\" key=\"value\" src=\"/code.js\"></script>")
+        XCTAssertEqual(output, "<script custom=\"part\" data-key=\"value\" src=\"/code.js\"></script>")
     }
 }

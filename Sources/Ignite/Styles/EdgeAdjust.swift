@@ -5,10 +5,12 @@
 // See LICENSE for license information.
 //
 
+import Foundation
+
 /// Both the margin() and padding() modifiers work identically apart from the exact
 /// name of the CSS attribute they change, so their functionality is wrapped up here
 /// to avoid code duplication. This should not be called directly.
-extension HTML {
+extension PageElement {
     /// Adjusts the edge value (margin or padding) for a view.
     /// - Parameters:
     ///   - prefix: Specifies what we are changing, e.g. "padding"

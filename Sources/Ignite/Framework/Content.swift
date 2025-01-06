@@ -8,8 +8,7 @@
 import Foundation
 
 /// One piece of Markdown content for this site.
-@MainActor
-public struct Content: Sendable {
+public struct Content {
     /// The main title for this content.
     public var title: String
 
@@ -21,7 +20,7 @@ public struct Content: Sendable {
 
     /// Extra metadata as extracted from YAML front matter.
     /// See https://jekyllrb.com/docs/front-matter/
-    public var metadata: [String: any Sendable]
+    public var metadata: [String: Any]
 
     /// The main body of this content. Excludes its title.
     public var body: String
@@ -46,8 +45,8 @@ public struct Content: Sendable {
         metadata["modified"] as? Date ?? date
     }
 
-    /// The `ContentLayout` name to use for this content. This should be the name
-    /// of a type that conforms to the `ContentLayout` protocol.
+    /// The `ContentPage` name to use for this content. This should be the name
+    /// of a type that conforms to the `ContentPage` protocol.
     public var layout: String? {
         metadata["layout"] as? String
     }
@@ -197,20 +196,26 @@ public struct Content: Sendable {
 
     /// An array of `Link` objects that show badges for the tags of this
     /// content, and also link to the tag pages.
-    public func tagLinks() -> [Link] {
+    public func tagLinks(in context: PublishingContext) -> [Link] {
+        /// If this site has not defined a tag page, send back no links.
+        if context.site.tagPage is EmptyTagPage {
+            context.addWarning("tagLinks(in:) returned an empty array because your site has no tagPage defined.")
+            return []
+        }
+
         if let tags = metadata["tags"] as? String {
-            tags.splitAndTrim().map { tag in
+            return tags.splitAndTrim().map { tag in
                 let tagPath = tag.convertedToSlug() ?? tag
 
                 return Link(target: "/tags/\(tagPath)") {
                     Badge(tag)
                         .role(.primary)
-                        .margin(.trailing, .px(5))
+                        .margin(.trailing, 5)
                 }
                 .relationship(.tag)
             }
         } else {
-            []
+            return []
         }
     }
 
@@ -221,19 +226,5 @@ public struct Content: Sendable {
         formatter.dateFormat = "y-MM-dd HH:mm"
         formatter.timeZone = .gmt
         return formatter.date(from: date)
-    }
-}
-
-extension Content {
-    static let empty = Content()
-
-    /// Creates an empty markdown content instance with default values.
-    init() {
-        self.title = ""
-        self.description = ""
-        self.path = ""
-        self.metadata = [:]
-        self.body = ""
-        self.hasAutomaticDate = false
     }
 }

@@ -5,6 +5,8 @@
 // See LICENSE for license information.
 //
 
+import Foundation
+
 /// Allows the user to inject hand-written JavaScript into an event. The code you provide
 /// will automatically be escaped.
 public struct CustomAction: Action {

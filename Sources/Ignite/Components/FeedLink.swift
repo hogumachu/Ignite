@@ -5,23 +5,24 @@
 // See LICENSE for license information.
 //
 
+import Foundation
+
 /// Displays a link to your RSS feed, if enabled.
-public struct FeedLink: HTML {
+struct FeedLink: Component {
+    public init() { }
 
-    @Environment(\.siteConfiguration) private var siteConfig
-    @Environment(\.feedConfiguration) private var feedConfig
+    func body(context: PublishingContext) -> [any PageElement] {
+        if context.site.isFeedEnabled {
+            Text {
+                if context.site.builtInIconsEnabled != .none {
+                    Image(systemName: "rss-fill")
+                        .foregroundStyle(Color(hex: "#f26522"))
+                        .margin(.trailing, 10)
+                }
 
-    public var body: some HTML {
-        Text {
-            if siteConfig.builtInIconsEnabled != .none {
-                Image(systemName: "rss-fill")
-                    .foregroundStyle("#f26522")
-                    .margin(.trailing, .px(10))
+                Link("RSS Feed", target: context.site.feedConfiguration.path)
             }
-
-            Link("RSS Feed", target: feedConfig.path)
-            EmptyHTML()
+            .horizontalAlignment(.center)
         }
-        .horizontalAlignment(.center)
     }
 }

@@ -5,10 +5,12 @@
 // See LICENSE for license information.
 //
 
+import Foundation
+
 /// A group of information placed inside a gently rounded
-public struct Card: BlockHTML {
+public struct Card: BlockElement {
     /// Styling for this card.
-    public enum Style: CaseIterable {
+    public enum CardStyle: CaseIterable {
         /// Default styling.
         case `default`
 
@@ -39,7 +41,6 @@ public struct Card: BlockHTML {
         public static let overlay = Self.overlay(alignment: .topLeading)
 
         // MARK: Helpers for `render`
-
         var imageClass: String {
             switch self {
             case .bottom:
@@ -96,50 +97,44 @@ public struct Card: BlockHTML {
         var textAlignment: TextAlignment {
             switch self {
             case .topLeading, .leading, .bottomLeading:
-                .start
+                    .start
             case .top, .center, .bottom:
-                .center
+                    .center
             case .topTrailing, .trailing, .bottomTrailing:
-                .end
+                    .end
             }
         }
 
         var verticalAlignment: VerticalAlignment {
             switch self {
             case .topLeading, .top, .topTrailing:
-                .start
+                    .start
             case .leading, .center, .trailing:
-                .center
+                    .center
             case .bottomLeading, .bottom, .bottomTrailing:
-                .end
+                    .end
             }
         }
 
         public static let `default` = Self.topLeading
     }
 
-    /// The content and behavior of this HTML.
-    public var body: some HTML { self }
-
-    /// The unique identifier of this HTML.
-    public var id = UUID().uuidString.truncatedHash
-
-    /// Whether this HTML belongs to the framework.
-    public var isPrimitive: Bool { true }
+    /// The standard set of control attributes for HTML elements.
+    public var attributes = CoreAttributes()
 
     /// How many columns this should occupy when placed in a section.
     public var columnWidth = ColumnWidth.automatic
 
     var role = Role.default
-    var style = Style.default
+    var style = CardStyle.default
 
     var contentPosition = ContentPosition.default
     var imageOpacity = 1.0
 
     var image: Image?
-    private var header: HTMLCollection
-    private var footer: HTMLCollection
-    private var items: HTMLCollection
+    var header = [any PageElement]()
+    var footer = [any PageElement]()
+    var items: [any PageElement]
 
     var cardClasses: String? {
         switch style {
@@ -154,24 +149,24 @@ public struct Card: BlockHTML {
 
     public init(
         imageName: String? = nil,
-        @HTMLBuilder body: () -> some HTML,
-        @HTMLBuilder header: () -> some HTML = { EmptyHTML() },
-        @HTMLBuilder footer: () -> some HTML = { EmptyHTML() }
+        @PageElementBuilder body: () -> [PageElement],
+        @PageElementBuilder header: () -> [PageElement] = { [] },
+        @PageElementBuilder footer: () -> [PageElement] = { [] }
     ) {
         if let imageName {
             self.image = Image(decorative: imageName)
         }
 
-        self.header = HTMLCollection(header)
-        self.footer = HTMLCollection(footer)
-        self.items = HTMLCollection(body)
+        self.header = header()
+        self.footer = footer()
+        self.items = body()
     }
 
     public func role(_ role: Role) -> Card {
         var copy = self
         copy.role = role
 
-        if style == .default {
+        if self.style == .default {
             copy.style = .solid
         }
 
@@ -181,7 +176,7 @@ public struct Card: BlockHTML {
     /// Adjusts the rendering style of this card.
     /// - Parameter style: The new card style to use.
     /// - Returns: A new `Card` instance with the updated style.
-    public func cardStyle(_ style: Style) -> Card {
+    public func cardStyle(_ style: CardStyle) -> Card {
         var copy = self
         copy.style = style
         return copy
@@ -205,9 +200,8 @@ public struct Card: BlockHTML {
         copy.imageOpacity = opacity
         return copy
     }
-
     public func render(context: PublishingContext) -> String {
-        Container {
+        Group {
             if let image, contentPosition.addImageFirst {
                 if imageOpacity != 1 {
                     image
@@ -219,9 +213,7 @@ public struct Card: BlockHTML {
                 }
             }
 
-            if header.isEmptyHTML == false {
-                renderHeader()
-            }
+            renderHeader()
 
             renderItems()
 
@@ -236,9 +228,7 @@ public struct Card: BlockHTML {
                 }
             }
 
-            if footer.isEmptyHTML == false {
-                renderFooter()
-            }
+            renderFooter()
         }
         .attributes(attributes)
         .class("card")
@@ -246,41 +236,50 @@ public struct Card: BlockHTML {
         .render(context: context)
     }
 
-    private func renderHeader() -> Container {
-        Container {
-            for item in header {
-                item
+    private func renderHeader() -> Group {
+        if header.isEmpty == false {
+            return Group {
+                for item in header {
+                    item
+                }
             }
+            .class("card-header")
         }
-        .class("card-header")
+        return Group {}
     }
 
-    private func renderItems() -> Container {
-        Container {
-            ForEach(items) { item in
+    private func renderItems() -> Group {
+        Group {
+            for item in items {
                 switch item {
-                case let text as Text where text.font == .body || text.font == .lead:
-                    text.class("card-text")
-                case let text as Text:
-                    text.class("card-title")
-                case let link as Link:
-                    link.class("card-link")
-                case let image as Image:
-                    image.class("card-img")
+                case let textItem as Text:
+                    switch textItem.font {
+                    case .body, .lead:
+                        item.class("card-text")
+                    default:
+                        item.class("card-title")
+                    }
+                case is Link:
+                    item.class("card-link")
+                case is Image:
+                    item.class("card-img")
                 default:
-                    AnyHTML(item)
+                    item
                 }
             }
         }
         .class(contentPosition.bodyClasses)
     }
 
-    private func renderFooter() -> Container {
-        Container {
-            for item in footer {
-                item
+    private func renderFooter() -> Group {
+        if footer.isEmpty == false {
+            return Group {
+                for item in footer {
+                    item
+                }
             }
+            .class("card-footer", "text-body-secondary")
         }
-        .class("card-footer", "text-body-secondary")
+        return Group {}
     }
 }

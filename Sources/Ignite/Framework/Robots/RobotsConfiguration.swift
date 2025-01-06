@@ -5,6 +5,8 @@
 // See LICENSE for license information.
 //
 
+import Foundation
+
 /// A simple protocol that lets users create custom robot configurations easily.
 public protocol RobotsConfiguration {
     var disallowRules: [DisallowRule] { get }

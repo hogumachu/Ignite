@@ -1,12 +1,5 @@
-//
-// BootstrapOptions.swift
-// Ignite
-// https://www.github.com/twostraws/Ignite
-// See LICENSE for license information.
-//
-
 /// Configuration option including a remote or local version of Bootstrap or none at all
-public enum BootstrapOptions: Sendable {
+public enum BootstrapOptions {
     /// Use a local copy of Bootstrap. This will copy Bootstrap's CSS and JavaScript to the
     /// generated code and add references in the generated pages
     case localBootstrap

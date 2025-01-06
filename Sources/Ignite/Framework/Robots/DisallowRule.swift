@@ -5,6 +5,8 @@
 // See LICENSE for license information.
 //
 
+import Foundation
+
 /// A rule that disallows one specific robot from one or more paths on your site.
 public struct DisallowRule {
     var name: String

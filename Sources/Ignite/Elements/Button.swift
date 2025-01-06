@@ -5,18 +5,17 @@
 // See LICENSE for license information.
 //
 
+import Foundation
+
+/// Controls the display size of buttons. Medium is the default.
+public enum ButtonSize: String, CaseIterable {
+    case small, medium, large
+}
+
 /// A clickable button with a label and styling.
-public struct Button: BlockHTML, InlineHTML {
-    /// How many columns this should occupy when placed in a section or form.
-    public var columnWidth: ColumnWidth = .automatic
-
-    /// Controls the display size of buttons. Medium is the default.
-    public enum Size: String, CaseIterable {
-        case small, medium, large
-    }
-
+public struct Button: InlineElement {
     /// Whether this button is just clickable, or whether its submits a form.
-    public enum `Type` {
+    public enum ButtonType {
         /// This button does not submit a form.
         case plain
 
@@ -32,70 +31,62 @@ public struct Button: BlockHTML, InlineHTML {
         }
     }
 
-    /// The content and behavior of this HTML.
-    public var body: some HTML { self }
-
-    /// The unique identifier of this HTML.
-    public var id = UUID().uuidString.truncatedHash
-
-    /// Whether this HTML belongs to the framework.
-    public var isPrimitive: Bool { true }
+    /// The standard set of control attributes for HTML elements.
+    public var attributes = CoreAttributes()
 
     /// Whether this button should submit a form or not. Defaults to `.plain`.
-    var type = Type.plain
+    var type = ButtonType.plain
 
     /// How large this button should be drawn. Defaults to `.medium`.
-    var size = Size.medium
+    var size = ButtonSize.medium
 
     /// How this button should be styled on the screen. Defaults to `.default`.
     var role = Role.default
 
     /// Elements to render inside this button.
-    var label: any HTML
+    var label: [InlineElement]
 
     /// Creates a button with no label. Used in some situations where
     /// exact styling is performed by Bootstrap, e.g. in Carousel.
     public init() {
-        self.label = EmptyHTML()
+        self.label = []
     }
 
     /// Creates a button with a label.
     /// - Parameter label: The label text to display on this button.
-    public init(_ label: some InlineHTML) {
-        self.label = label
+    public init(_ label: InlineElement) {
+        self.label = [label]
     }
 
     /// Creates a button from a more complex piece of HTML.
     /// - Parameter label: An inline element builder of all the content
     /// for this button.
-    public init(@InlineHTMLBuilder label: @escaping () -> some InlineHTML) {
+    public init(@InlineElementBuilder label: () -> [InlineElement]) {
         self.label = label()
-    }
-
-    /// Creates a button with a label.
-    /// - Parameter label: The label text to display on this button.
-    /// - actions: An element builder that returns an array of actions to run when this button is pressed.
-    public init(_ label: String, @ActionBuilder actions: () -> [Action]) {
-        self.label = label
-        addEvent(name: "onclick", actions: actions())
     }
 
     /// Creates a button with a label and actions to run when it's pressed.
     /// - Parameters:
     ///   - label: The label text to display on this button.
     ///   - actions: An element builder that returns an array of actions to run when this button is pressed.
-    public init(
-        @InlineHTMLBuilder _ label: @escaping () -> some InlineHTML,
-        @ActionBuilder actions: () -> [Action]
-    ) {
+    public init(_ label: any InlineElement, @ElementBuilder<Action> actions: () -> [Action]) {
+        self.label = [label]
+        self.addEvent(name: "onclick", actions: actions())
+    }
+
+    /// Creates a button with a label and actions to run when it's pressed.
+    /// - Parameters:
+    ///   - label: The label text to display on this button.
+    ///   - actions: An element builder that returns an array of actions to run when this button is pressed.
+    public init(@ElementBuilder<Action> actions: () -> [Action], @InlineElementBuilder label: () -> [InlineElement]) {
         self.label = label()
-        addEvent(name: "onclick", actions: actions())
+        self.addEvent(name: "onclick", actions: actions())
     }
 
     /// Adjusts the size of this button.
     /// - Parameter size: The new size.
     /// - Returns: A new `Button` instance with the updated size.
-    public func buttonSize(_ size: Size) -> Self {
+    public func buttonSize(_ size: ButtonSize) -> Self {
         var copy = self
         copy.size = size
         return copy
@@ -110,15 +101,6 @@ public struct Button: BlockHTML, InlineHTML {
         return copy
     }
 
-    /// Sets the button type, determining its behavior.
-    /// - Parameter type: The type of button, such as `.plain` or `.submit`.
-    /// - Returns: A new `Button` instance with the updated type.
-    public func type(_ type: Type) -> Self {
-        var copy = self
-        copy.type = type
-        return copy
-    }
-
     /// Returns an array containing the correct CSS classes to style this button
     /// based on the role and size passed in. This is used for buttons, links, and
     /// dropdowns, which is why it's shared.
@@ -126,7 +108,7 @@ public struct Button: BlockHTML, InlineHTML {
     ///   - role: The role we are styling.
     ///   - size: The size we are styling.
     /// - Returns: The CSS classes to apply for this button
-    public static func classes(forRole role: Role, size: Size) -> [String] {
+    public static func classes(forRole role: Role, size: ButtonSize) -> [String] {
         var outputClasses = ["btn"]
 
         switch size {
@@ -148,7 +130,6 @@ public struct Button: BlockHTML, InlineHTML {
         return outputClasses
     }
 
-    /// Adds the correct ARIA attribute for Close buttons, if needed.
     public static func aria(forRole role: Role) -> AttributeValue? {
         switch role {
         case .close:
@@ -162,24 +143,10 @@ public struct Button: BlockHTML, InlineHTML {
     /// - Parameter context: The current publishing context.
     /// - Returns: The HTML for this element.
     public func render(context: PublishingContext) -> String {
-        var buttonAttributes = attributes
+        let buttonAttributes = attributes
             .appending(classes: Button.classes(forRole: role, size: size))
             .appending(aria: Button.aria(forRole: role))
-        let output = HTMLCollection(label).render(context: context)
-        buttonAttributes.tag = "button type=\"\(type.htmlName)\""
-        buttonAttributes.closingTag = "button"
-        return buttonAttributes.description(wrapping: output)
-    }
-}
-
-extension Button {
-    /// Adjusts the number of columns assigned to this element.
-    /// - Parameter width: The new number of columns to use.
-    /// - Returns: A copy of the current element with the adjusted column width.
-    public func width(_ width: Int) -> Self {
-        var copy = self
-        copy.columnWidth = .count(width)
-        copy.class("w-100")
-        return copy
+        let output = label.map { $0.render(context: context) }.joined()
+        return "<button type=\"\(type.htmlName)\"\(buttonAttributes.description)>\(output)</button>"
     }
 }
