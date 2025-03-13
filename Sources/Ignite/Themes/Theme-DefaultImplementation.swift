@@ -8,21 +8,13 @@
 /// Default implementation providing Bootstrap's default light theme values
 /// Default implementation providing Bootstrap's default theme values
 public extension Theme {
-    var accent: Color {
-        Color(red: 13, green: 110, blue: 253)
-    }
+    var accent: Color { Color(hex: "#4CEC8B") }
 
-    var secondaryAccent: Color {
-        Color(red: 108, green: 117, blue: 125)
-    }
+    var secondaryAccent: Color { Color(hex: "#DDF34E") }
 
-    var success: Color {
-        Color(red: 25, green: 135, blue: 84)
-    }
+    var success: Color { Color(hex: "#16FF71") }
 
-    var info: Color {
-        Color(red: 13, green: 202, blue: 240)
-    }
+    var info: Color { Color(hex: "#E6E6E6") }
 
     var warning: Color {
         Color(red: 255, green: 193, blue: 7)
@@ -40,53 +32,21 @@ public extension Theme {
         Color(hex: "#212529")
     }
 
-    var primary: Color {
-        colorScheme == .dark ?
-        Color(hex: "#dee2e6") :
-        Color(hex: "#212529")
-    }
+    var primary: Color { Color (hex: "#E0E0EB") }
 
-    var emphasis: Color {
-        colorScheme == .dark ?
-        Color(hex: "#f8f9fa") :
-        Color(hex: "#212529")
-    }
+    var emphasis: Color { Color (hex: "#FBFBFB")}
 
-    var secondary: Color {
-        colorScheme == .dark ?
-        Color(red: 248, green: 249, blue: 250, opacity: 0.75) :
-        Color(red: 33, green: 37, blue: 41, opacity: 0.75)
-    }
+    var secondary: Color { Color(hex: "#B7B7B7") }
 
-    var tertiary: Color {
-        colorScheme == .dark ?
-        Color(red: 248, green: 249, blue: 250, opacity: 0.5) :
-        Color(red: 33, green: 37, blue: 41, opacity: 0.5)
-    }
+    var tertiary: Color { Color(hex: "#616161") }
 
-    var background: Color {
-        colorScheme == .dark ?
-        Color(hex: "#212529") :
-        Color(hex: "#ffffff")
-    }
+    var background: Color { Color(hex: "#000000") }
 
-    var secondaryBackground: Color {
-        colorScheme == .dark ?
-        Color(hex: "#343a40") :
-        Color(hex: "#e9ecef")
-    }
+    var secondaryBackground: Color { Color(hex: "#151516")}
 
-    var tertiaryBackground: Color {
-        colorScheme == .dark ?
-        Color(hex: "#2b3035") :
-        Color(hex: "#f8f9fa")
-    }
+    var tertiaryBackground: Color { Color(hex: "#1C1C1D") }
 
-    var border: Color {
-        colorScheme == .dark ?
-        Color(hex: "#495057") :
-        Color(hex: "#dee2e6")
-    }
+    var border: Color { Color(hex: "#8E8E8E") }
 
     var syntaxHighlighterTheme: HighlighterTheme {
         colorScheme == .dark ?
@@ -94,17 +54,9 @@ public extension Theme {
         .automatic
     }
 
-    var link: Color {
-        colorScheme == .dark ?
-        Color(hex: "#6ea8fe") :
-        Color(hex: "#0d6efd")
-    }
+    var link: Color { Color(hex: "#478BFF") }
 
-    var hoveredLink: Color {
-        colorScheme == .dark ?
-        Color(hex: "#9ec5fe") :
-        Color(hex: "#0a58ca")
-    }
+    var hoveredLink: Color { Color(hex: "#2D73E9") }
 
     // Links
     var linkDecoration: TextDecoration { .underline }
